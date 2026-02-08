@@ -49,11 +49,6 @@ namespace Bloc_de_notas
             toolStripStatusLabel2.Text = $"Columna: {columna}";
         }
 
-        private void guardarToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Este es el primer botón de guardar (puedes dejarlo o borrarlo)
-            MessageBox.Show("Hola");
-        }
 
         private void toolStripStatusLabel1_Click(object sender, EventArgs e)
         {
@@ -170,6 +165,12 @@ namespace Bloc_de_notas
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
             EjecutarGuardarComo();
+        }
+
+        private void buscarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form2 f = new Form2(richTextBox1);
+            f.Show();
         }
     }
 }

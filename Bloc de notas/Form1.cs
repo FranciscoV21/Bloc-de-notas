@@ -73,13 +73,6 @@ namespace Bloc_de_notas
             EjecutarGuardarComo();
         }
 
-        // --- FUNCIÓN SALIR ---
-        private void salirToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
-        // --- MÉTODO AUXILIAR PARA GUARDAR COMO ---
         private void EjecutarGuardarComo()
         {
             SaveFileDialog sfd = new SaveFileDialog();

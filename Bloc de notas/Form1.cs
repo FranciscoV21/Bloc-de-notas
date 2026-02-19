@@ -15,25 +15,59 @@ namespace Bloc_de_notas
     {
         string archivoActual = null;
 
-        private readonly Dictionary<string, string> mapaEmojis = new Dictionary<string, string>
-        {
-            { ":)", "🙂" },
-            { ":(", "☹️" },
-            { ":D", "😀" },
-            { ";)", "😉" },
-            { "<3", "❤️" },
-            { "(y)", "👍" }
-        };
         public Form1()
         {
             InitializeComponent();
-            // Configuración inicial de la barra de estado
             ActualizarBarraEstado();
 
-            // Suscribir eventos por código para asegurar que funcionen
+            // Suscribir eventos
             richTextBox1.SelectionChanged += richTextBox1_SelectionChanged;
             richTextBox1.TextChanged += richTextBox1_TextChanged;
         }
+
+        // --- LÓGICA DE EMOJIS (IMÁGENES) ---
+        private void richTextBox1_TextChanged(object sender, EventArgs e)
+        {
+            // Desactivamos temporalmente para evitar que el reemplazo dispare el evento otra vez
+            richTextBox1.TextChanged -= richTextBox1_TextChanged;
+
+            int cursorOriginal = richTextBox1.SelectionStart;
+            bool huboCambio = false;
+
+            // Diccionario que vincula el texto con la imagen en Recursos
+            var mapaImagenes = new Dictionary<string, Image>
+            {
+                { ":)", Properties.Resources.cara_feliz },
+                { ":(", Properties.Resources.emoji_triste },
+                { ":D", Properties.Resources.emoji_risa },
+                { "<3", Properties.Resources.emoji_corazon },
+            };
+
+            foreach (var emoji in mapaImagenes)
+            {
+                int index = 0;
+                while ((index = richTextBox1.Find(emoji.Key, index, RichTextBoxFinds.None)) != -1)
+                {
+                    richTextBox1.Select(index, emoji.Key.Length);
+
+                    // Copiamos imagen al portapapeles y la pegamos en el RichTextBox
+                    Clipboard.SetImage(emoji.Value);
+                    richTextBox1.Paste();
+
+                    huboCambio = true;
+                }
+            }
+
+            if (huboCambio)
+            {
+                richTextBox1.SelectionStart = cursorOriginal;
+                Clipboard.Clear(); // Limpiamos el portapapeles
+            }
+
+            richTextBox1.TextChanged += richTextBox1_TextChanged;
+        }
+
+        // --- BARRA DE ESTADO ---
         private void richTextBox1_SelectionChanged(object sender, EventArgs e)
         {
             ActualizarBarraEstado();
@@ -49,128 +83,82 @@ namespace Bloc_de_notas
             toolStripStatusLabel2.Text = $"Columna: {columna}";
         }
 
-
-        private void toolStripStatusLabel1_Click(object sender, EventArgs e)
-        {
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-        }
-
-        // --- FUNCIÓN ABRIR ---
+        // --- ARCHIVO: ABRIR ---
         private void abrirToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Documento de texto|*.txt";
+            ofd.Filter = "Documento Enriquecido|*.rtf|Archivo de texto|*.txt";
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 archivoActual = ofd.FileName;
-                richTextBox1.Text = File.ReadAllText(archivoActual);
+                if (Path.GetExtension(archivoActual).ToLower() == ".rtf")
+                    richTextBox1.LoadFile(archivoActual);
+                else
+                    richTextBox1.Text = File.ReadAllText(archivoActual);
+
                 this.Text = "Bloc de notas - " + Path.GetFileName(archivoActual);
             }
         }
 
-        // --- FUNCIÓN GUARDAR ---
+        // --- ARCHIVO: GUARDAR ---
         private void guardarToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(archivoActual))
-            {
                 EjecutarGuardarComo();
-            }
             else
-            {
-                File.WriteAllText(archivoActual, richTextBox1.Text);
-            }
+                GuardarArchivoReal(archivoActual);
         }
 
-        // --- FUNCIÓN GUARDAR COMO ---
         private void guardarComoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             EjecutarGuardarComo();
         }
 
-        // --- FUNCIÓN SALIR ---
-        private void salirToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
-        // --- MÉTODO AUXILIAR PARA GUARDAR COMO ---
         private void EjecutarGuardarComo()
         {
             SaveFileDialog sfd = new SaveFileDialog();
-            sfd.Filter = "Documento de texto|*.txt";
+            sfd.Filter = "Documento Enriquecido|*.rtf|Archivo de texto|*.txt";
             sfd.AddExtension = true;
 
             if (sfd.ShowDialog() == DialogResult.OK)
             {
                 archivoActual = sfd.FileName;
-                File.WriteAllText(archivoActual, richTextBox1.Text);
+                GuardarArchivoReal(archivoActual);
                 this.Text = "Bloc de notas - " + Path.GetFileName(archivoActual);
             }
         }
 
-        private void toolStripButton4_Click(object sender, EventArgs e)
+        private void GuardarArchivoReal(string ruta)
         {
-            
-            Form2 f = new Form2(richTextBox1);
-            f.Show();
+            // Si es RTF guardamos con imágenes, si es TXT solo texto plano
+            if (Path.GetExtension(ruta).ToLower() == ".rtf")
+                richTextBox1.SaveFile(ruta, RichTextBoxStreamType.RichText);
+            else
+                File.WriteAllText(ruta, richTextBox1.Text);
         }
 
-        private void toolStripProgressBar1_Click(object sender, EventArgs e)
+        // --- OTROS EVENTOS Y BOTONES ---
+        private void salirToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            Application.Exit();
         }
 
-        private void richTextBox1_TextChanged(object sender, EventArgs e)
-        {
-            // Desactivamos el evento temporalmente para evitar recursividad infinita
-            richTextBox1.TextChanged -= richTextBox1_TextChanged;
-
-            int cursorPosition = richTextBox1.SelectionStart;
-            bool cambioRealizado = false;
-
-            foreach (var emoji in mapaEmojis)
-            {
-                if (richTextBox1.Text.Contains(emoji.Key))
-                {
-                    // Reemplazamos el texto por el emoji
-                    richTextBox1.Text = richTextBox1.Text.Replace(emoji.Key, emoji.Value);
-                    cambioRealizado = true;
-                }
-            }
-
-            // Si hubo cambio, el cursor se mueve al inicio, hay que regresarlo
-            if (cambioRealizado)
-            {
-                richTextBox1.SelectionStart = cursorPosition;
-            }
-
-            // Reactivamos el evento
-            richTextBox1.TextChanged += richTextBox1_TextChanged;
-        }
-
-        private void toolStripButton1_Click(object sender, EventArgs e)
-        {
-            abrirToolStripMenuItem_Click(sender, e);
-        }
-
-        private void toolStripButton2_Click(object sender, EventArgs e)
-        {
-            guardarToolStripMenuItem_Click_1(sender,e);
-        }
-
-        private void toolStripButton3_Click(object sender, EventArgs e)
-        {
-            EjecutarGuardarComo();
-        }
+        private void toolStripButton1_Click(object sender, EventArgs e) => abrirToolStripMenuItem_Click(sender, e);
+        private void toolStripButton2_Click(object sender, EventArgs e) => guardarToolStripMenuItem_Click_1(sender, e);
+        private void toolStripButton3_Click(object sender, EventArgs e) => EjecutarGuardarComo();
 
         private void buscarToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Form2 f = new Form2(richTextBox1);
             f.Show();
         }
+
+        private void toolStripButton4_Click(object sender, EventArgs e) => buscarToolStripMenuItem_Click(sender, e);
+
+        // Métodos vacíos para evitar errores de diseño (CS1061)
+        private void toolStripStatusLabel1_Click(object sender, EventArgs e) { }
+        private void Form1_Load(object sender, EventArgs e) { }
+        private void toolStripProgressBar1_Click(object sender, EventArgs e) { }
     }
 }

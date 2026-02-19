@@ -92,5 +92,20 @@
   <ItemGroup>
     <None Include="Resources\gettyimages-482020987-612x612.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paint.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paintfuera.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\add.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\addsi.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\remove.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

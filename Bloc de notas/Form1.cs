@@ -116,25 +116,25 @@ namespace Bloc_de_notas
             RichTextBox txt = sender as RichTextBox;
             if (txt == null) return;
 
-            // Guardamos el texto plano ANTES de hacer cualquier reemplazo visual
+            // Desconectamos PRIMERO para que los Paste() no disparen este evento
+            txt.TextChanged -= richTextBox1_TextChanged;
+
+            // Guardamos el texto plano AHORA, antes de pegar nada
             TabPage paginaActual = tabControl1.TabPages.Cast<TabPage>()
                 .FirstOrDefault(p => p.Controls.Contains(txt));
 
             if (paginaActual != null)
                 _textoPlano[paginaActual] = txt.Text;
 
-            txt.TextChanged -= richTextBox1_TextChanged;
-
             int cursorOriginal = txt.SelectionStart;
-            bool huboCambio = false;
 
             var mapaImagenes = new Dictionary<string, Image>
-            {
-                { ":)", Properties.Resources.cara_feliz },
-                { ":(", Properties.Resources.emoji_triste },
-                { ":D", Properties.Resources.emoji_risa },
-                { "<3", Properties.Resources.emoji_corazon },
-            };
+    {
+        { ":)", Properties.Resources.cara_feliz },
+        { ":(", Properties.Resources.emoji_triste },
+        { ":D", Properties.Resources.emoji_risa },
+        { "<3", Properties.Resources.emoji_corazon },
+    };
 
             foreach (var emoji in mapaImagenes)
             {
@@ -145,16 +145,13 @@ namespace Bloc_de_notas
                     txt.Select(index, emoji.Key.Length);
                     Clipboard.SetImage(emoji.Value);
                     txt.Paste();
-                    huboCambio = true;
                 }
             }
 
-            if (huboCambio)
-            {
-                txt.SelectionStart = cursorOriginal;
-                Clipboard.Clear();
-            }
+            txt.SelectionStart = cursorOriginal;
+            Clipboard.Clear();
 
+            // Reconectamos AL FINAL
             txt.TextChanged += richTextBox1_TextChanged;
         }
 

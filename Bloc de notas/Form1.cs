@@ -165,11 +165,7 @@ namespace Bloc_de_notas
             {
                 CrearNuevaPestaña(Path.GetFileName(ofd.FileName), ofd.FileName);
                 RichTextBox editor = GetEditorActual();
-
-                if (Path.GetExtension(ofd.FileName).ToLower() == ".txt")
-                    editor.LoadFile(ofd.FileName);
-                else
-                    editor.Text = File.ReadAllText(ofd.FileName);
+                editor.Text = File.ReadAllText(ofd.FileName);
             }
         }
 
@@ -255,6 +251,38 @@ namespace Bloc_de_notas
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
             {
                 e.Handled = true;
+            }
+        }
+
+        
+
+        private void guardarComoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RichTextBox editor = GetEditorActual();
+            if (editor == null) return;
+
+            SaveFileDialog sfd = new SaveFileDialog { Filter = "Archivo de texto|*.txt" };
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                string ruta = sfd.FileName;
+                tabControl1.SelectedTab.Tag = ruta;
+                tabControl1.SelectedTab.Text = Path.GetFileName(ruta);
+                File.WriteAllText(ruta, editor.Text);
+            }
+        }
+
+        private void GuardarComo_Click(object sender, EventArgs e)
+        {
+            RichTextBox editor = GetEditorActual();
+            if (editor == null) return;
+
+            SaveFileDialog sfd = new SaveFileDialog { Filter = "Archivo de texto|*.txt" };
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                string ruta = sfd.FileName;
+                tabControl1.SelectedTab.Tag = ruta;
+                tabControl1.SelectedTab.Text = Path.GetFileName(ruta);
+                File.WriteAllText(ruta, editor.Text);
             }
         }
     }
